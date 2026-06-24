@@ -16,6 +16,7 @@ Use this skill when the user needs to troubleshoot or manage Kubernetes clusters
 - Understanding CrashLoopBackOff, ImagePullBackOff, pending pods
 - Multi-cluster interactions through kubeconfig contexts
 - Suggesting next debugging steps
+- Only focusing on application-related namespaces when requested
 
 ## Tool Preference: MCP First, kubectl as Fallback
 
@@ -31,7 +32,7 @@ Use this skill when the user needs to troubleshoot or manage Kubernetes clusters
 - MCP cannot provide the information needed
 - Specific kubectl features are required (port-forward, plugins, etc.)
 
-This skill helps Claude:
+This skill helps to:
 
 - Choose the appropriate tool based on availability and capabilities
 - Restrict queries to namespace/cluster automatically  
@@ -68,7 +69,7 @@ Examples of safe MCP-driven operations:
 - **Get Events**: `get events --namespace=<ns> --field-selector=involvedObject.name=<name>`
 - **Inspect Deployment**: `get deployment <name> --namespace=<ns>`
 
-**When using kubectl** (fallback):
+**When using kubectl** (fallback but not recommended for multi-step operations):
 
 - Always specify namespace with `-n <namespace>` or `--namespace=<namespace>`
 - Use `--context` when multiple clusters are configured
