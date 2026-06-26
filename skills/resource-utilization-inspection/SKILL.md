@@ -2,11 +2,12 @@
 
 ## Goal
 
-Identify workloads with missing or mis-sized requests/limits and provide evidence-backed recommendations.
+Identify workloads of the pods in the application-related namespaces.Mainly to analyze the CPU utilization and memory utilization of the workloads, and to identify any workloads that have a resource request/limit configuration that is too low or too high, which may lead to resource contention or waste. The skill is able to collect multiple metrics, including the resource request/limit configuration of the workloads, the actual resource usage of the workloads, and the resource usage of the nodes. The skill is able to identify any workloads that have a resource request/limit configuration that is too low or too high, and provide recommendations for adjusting the configuration.
+You should use metric-server embedded in k8s cluster, please do not try to connect a prometheus mcp server or start a port forward to collect metrics from prometheus server, as it may cause security issues and is not allowed in production environment.
 
 ## Inputs
 
-- Application namespace list
+- The application namespaces provided by the previous context.
 - Optional target utilization band (for example 50%-70% request utilization)
 
 ## Read-Only Evidence Collection
