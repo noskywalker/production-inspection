@@ -8,10 +8,11 @@ The current repository is a documentation-first scaffold: agent behavior is defi
 ## Environment Overview
 
 - Primary runtime target: Kubernetes clusters accessed through Kubernetes MCP.
+- Secondary runtime target: the VictoriaMetrics (Prometheus-compatible PromQL) backend running in the `observability` namespace, accessed exclusively through an approved read-only Prometheus MCP server.
 - Current connected context (from MCP): `ali-mgr-staging-config`.
 - Governance model: read-only inspection profile.
-- Active component context file: `component-contexts/context.kubernetes.md`.
-- Runtime input contract is active: collect `target_namespaces` before application performance inspection and follow validation rules defined in `component-contexts/context.kubernetes.md`.
+- Active component context files: `component-contexts/context.kubernetes.md` (cluster/namespace scope) and `component-contexts/context.observability.md` (metrics backend and Prometheus MCP access model), plus per-component templates under `component-contexts/`.
+- Runtime input contract is active: collect `target_namespaces` before application performance inspection and follow validation rules defined in `component-contexts/context.kubernetes.md`; collect `time_window` before any Prometheus-backed skill per `component-contexts/context.observability.md`.
 - Repository state: the current workspace contains harness documentation only; no application source tree, dependency manifest, or verified build/test entrypoint is present at the project root.
 - Files under `prompts/**` are excluded from the inspection, please ignore them for the purpose of this inspection.
 
@@ -25,7 +26,10 @@ When agent-specific guidance exists under `.github/agents/*`, prefer those files
   - `skills/k8s-performance-inspection/SKILL.md`
   - `skills/logging-auditing/SKILL.md`
   - `skills/resource-utilization-inspection/SKILL.md`
-- `skills/reporting.md` is not present in this workspace; use the severity baseline from `.github/agents/inspection.agent.md` together with each skill file's `Output Format` section when normalizing findings.
+  - `skills/slo-latency-error-analysis/SKILL.md` (Prometheus MCP)
+  - `skills/cluster-network-performance/SKILL.md` (Prometheus MCP)
+  - `skills/capacity-trend-analysis/SKILL.md` (Prometheus MCP)
+- Use `skills/reporting.md` together with the severity baseline from `.github/agents/inspection.agent.md` and each skill file's `Output Format` section when normalizing findings.
 
 ## Scope Boundaries
 
@@ -47,6 +51,7 @@ Out of scope:
 ## allowed_actions
 
 - Read-only Kubernetes API operations through MCP (`kubectl_get`, `kubectl_describe`, `kubectl_logs`, `kubectl_context`, `kubectl_generic` with read-only verbs only).
+- Read-only Prometheus MCP operations against the VictoriaMetrics backend: instant/range PromQL queries, label/series/metadata lookups, read-only alert state (see `component-contexts/context.observability.md`).
 - Non-interactive read-only `exec` only when explicitly approved.
 - Gather metadata and metrics references.
 - Produce findings, risk scores, and recommendations.
@@ -61,7 +66,8 @@ The agent must not perform any write/mutation operation, including but not limit
 - `scale` changes
 - node lifecycle mutations (`cordon`, `uncordon`, `drain`)
 - workload or config changes to Deployments, StatefulSets, DaemonSets, Services, ConfigMaps, Secrets, RBAC, policies
-- port-forwarding for non-inspection purposes
+- port-forwarding for non-inspection purposes, including port-forwarding or direct Service/Ingress access to the Prometheus/VictoriaMetrics backend (`vminsert`, `vmselect`, `vmalert`) — all metrics access must go through the approved Prometheus MCP server
+- Prometheus/VictoriaMetrics remote-write, admin API calls (snapshot, delete-series, TSDB flush), or alerting/recording rule mutation
 
 ## approval_gates
 
@@ -69,6 +75,7 @@ The agent must not perform any write/mutation operation, including but not limit
 - Any privileged `exec` request: require explicit human approval and command-level review.
 - Any broad log collection touching sensitive data: require owner approval and data handling confirmation.
 - Any comprehensive application inspection without user-specified namespace(s): require explicit user confirmation before proceeding.
+- Any Prometheus MCP query without an explicit or confirmed `time_window`, spanning more than 30 days, or not scoped to specific namespaces/workloads: require explicit user confirmation before proceeding.
 
 ## audit_requirements
 
@@ -76,7 +83,7 @@ Every inspection run must capture:
 
 - Timestamp window and cluster context.
 - Namespace/resource scope queried.
-- Commands issued (or MCP API operations) and sampled outputs/evidence links.
+- Commands issued (or MCP API operations) and sampled outputs/evidence links, including PromQL queries and their `time_window` for any Prometheus MCP calls.
 - Namespace input/validation trail (provided namespaces, validation result, and explicit confirmation for comprehensive scope when applicable).
 - Findings with severity, confidence, impact, and recommended actions.
 - Explicit statement that no mutation operation was executed.

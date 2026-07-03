@@ -3,7 +3,8 @@
 ## Goal
 
 Identify workloads of the pods in the application-related namespaces.Mainly to analyze the CPU utilization and memory utilization of the workloads, and to identify any workloads that have a resource request/limit configuration that is too low or too high, which may lead to resource contention or waste. The skill is able to collect multiple metrics, including the resource request/limit configuration of the workloads, the actual resource usage of the workloads, and the resource usage of the nodes. The skill is able to identify any workloads that have a resource request/limit configuration that is too low or too high, and provide recommendations for adjusting the configuration.
-You should use metric-server embedded in k8s cluster, please do not try to connect a prometheus mcp server or start a port forward to collect metrics from prometheus server, as it may cause security issues and is not allowed in production environment.
+
+This skill intentionally uses the metric-server embedded in the k8s cluster for a fast, point-in-time usage snapshot, and does not itself query Prometheus. Do not start a local port-forward or direct connection to the Prometheus/VictoriaMetrics backend from this skill. For historical/trend usage or SLO-based right-sizing, use `skills/capacity-trend-analysis/SKILL.md` or `skills/slo-latency-error-analysis/SKILL.md`, which query the approved read-only Prometheus MCP server described in `component-contexts/context.observability.md`.
 
 ## Inputs
 
