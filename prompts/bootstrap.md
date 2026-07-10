@@ -1,7 +1,6 @@
 ## Plan: Bootstrap K8s Production Inspection Agent Docs
 
-Create a documentation-first scaffold for a single production inspection agent that operates through a Kubernetes MCP server, 
-constrained by explicit harness rules and modular skills. 
+Create a documentation-first scaffold for a single production inspection agent that operates through a Kubernetes MCP server, constrained by explicit harness rules and modular skills. 
 The plan sets clear governance (`can`/`cannot`), standardized inspection workflows, 
 and reusable skill specs so future implementation stays safe, auditable,
 and consistent with SRE/security best practices. Please overwrite any existing directory structure and files with the following scaffold.
